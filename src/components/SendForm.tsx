@@ -1,4 +1,4 @@
-import { FormEvent } from "react";
+import { FormEvent, useState } from "react";
 import styles from "../styles/SendForm.module.css";
 import { ethers } from "ethers";
 
@@ -13,25 +13,33 @@ interface StartPaymentProps {
   addr: string;
 }
 
+interface errorType {
+  code: string;
+}
+
 type StartPayment = (arg: StartPaymentProps) => void;
 
-const startPayment: StartPayment = async ({ ether, addr }) => {
-  try {
-    const provider = new ethers.providers.Web3Provider(window.ethereum);
-    const signer = provider.getSigner();
-    ethers.utils.getAddress(addr);
-    const tx = {
-      to: addr,
-      value: ethers.utils.parseEther(ether),
-    };
-
-    signer.sendTransaction(tx);
-  } catch (err) {
-    console.log(err);
-  }
-};
-
 export const SendForm = () => {
+  const [errorText, setErrorText] = useState("");
+
+  const startPayment: StartPayment = async ({ ether, addr }) => {
+    try {
+      setErrorText("");
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const signer = provider.getSigner();
+      ethers.utils.getAddress(addr);
+      const tx = {
+        to: addr,
+        value: ethers.utils.parseEther(ether),
+      };
+
+      await signer.sendTransaction(tx);
+    } catch (err) {
+      let error = (err as errorType).code;
+      setErrorText(`Error ${error}. Try again`);
+    }
+  };
+
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const data = new FormData(e.currentTarget);
@@ -48,6 +56,7 @@ export const SendForm = () => {
         <label htmlFor="amount">Сумма:</label>
         <input type="text" id="amount" name="amount" />
         <button type="submit">SEND ETH</button>
+        <p>{errorText}</p>
       </form>
     </>
   );

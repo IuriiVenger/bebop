@@ -27,3 +27,9 @@
 .form button:hover {
   background-color: #3e8e41;
 }
+
+.form p {
+  margin-top: 10px;
+  color: red;
+  text-transform: uppercase;
+}
